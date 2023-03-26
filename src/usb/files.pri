@@ -8,6 +8,9 @@ H = $${LITERAL_HASH}
 QUSBGLOBAL_S_CONT = \
     "$${H}pragma once" \
     "$${H}define Q_USB_EXPORT" \
+    "$${H}include <QtCore/qglobal.h>" \
+    "$${H}include <QObject>" \
+    "$${H}include <QDebug>" \
     ""
 
 QUSBGLOBAL_M_CONT = \
@@ -53,7 +56,7 @@ SOURCES += \
     $$PWD/qhiddevice.cpp
 
 win32 {
-    LIBS_PRIVATE += Advapi32.lib Setupapi.lib
+    LIBS_PRIVATE += -lsetupapi
     # Build the hid library ourselves since it's only one file
     HIDAPI_ROOT_REL = $$PWD/../../hidapi
     SOURCES += $$HIDAPI_ROOT_REL/windows/hid.c
