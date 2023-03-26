@@ -47,7 +47,7 @@ QUsbDevicePrivate::QUsbDevicePrivate()
 QUsbDevicePrivate::~QUsbDevicePrivate()
 {
     Q_Q(QUsbDevice);
-    m_events->requestInterruption();
+    m_events->_exit = true;
     m_events->wait();
     m_events->deleteLater();
 
@@ -360,9 +360,10 @@ void QUsbDevice::close()
         if (m_log_level >= QUsb::logInfo)
             qInfo("Closing USB connection");
 
-        libusb_release_interface(d->m_devHandle, 0); // release the claimed interface
+        libusb_release_interface(d->m_devHandle, m_config.interface); // release the claimed interface
         libusb_close(d->m_devHandle); // close the device we opened
         d->m_events->exit(0); // stop event handling thread
+        d->m_events->_exit = true;
         d->m_events->wait();
         d->m_devHandle = Q_NULLPTR;
         m_connected = false;
@@ -476,11 +477,10 @@ QUsbDevice::DeviceSpeed QUsbDevice::speed() const
 
 void QUsbEventsThread::run()
 {
-
+    _exit = false;
     timeval t = { 0, 100000 };
-    while (!this->isInterruptionRequested()) {
+    while (!_exit) {
         if (libusb_event_handling_ok(m_ctx) == 0) {
-            libusb_unlock_events(m_ctx);
             break;
         }
         if (libusb_handle_events_timeout_completed(m_ctx, &t, Q_NULLPTR) != 0) {

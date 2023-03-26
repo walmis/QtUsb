@@ -19,7 +19,7 @@ class QUsbEventsThread : public QThread
 {
 public:
     void run();
-
+    volatile bool _exit = false;
     libusb_context *m_ctx;
 };
 
